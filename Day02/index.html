@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overheard Through Snowfall</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: #0b1026;
+            color: #e6e6fa;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #ffd700;
+            font-size: 1em;
+            pointer-events: none;
+            animation: fall linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #ffd700;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .story-content {
+            background: rgba(11, 16, 38, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .story-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .choice-button {
+            background: linear-gradient(45deg, #1a237e, #3949ab);
+            color: #e6e6fa;
+            border: 2px solid #ffd700;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            font-family: 'Crimson Text', serif;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .choice-button:hover {
+            background: linear-gradient(45deg, #ffd700, #ffeb3b);
+            color: #0b1026;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .restart-button {
+            background: linear-gradient(45deg, #d32f2f, #f44336);
+            color: #e6e6fa;
+            border: 2px solid #ffd700;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-family: 'Crimson Text', serif;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            align-self: center;
+            transition: all 0.3s ease;
+        }
+
+        .restart-button:hover {
+            background: linear-gradient(45deg, #ffd700, #ffeb3b);
+            color: #0b1026;
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .emoji {
+            font-size: 2rem;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Overheard Through Snowfall</h1>
+        
+        <!-- Start Screen -->
+        <div id="start" class="story-content">
+            <div class="story-text">
+                <span class="emoji">🌨️</span>
+                The Winter Festival was meant to begin at sunset, but the Storyteller has vanished without a trace. You stand at the frozen gates, hearing whispered tales carried on the wind. The festival cannot start without the ancient stories being told. Where will you search for the missing Storyteller?
+                <span class="emoji">🌨️</span>
+            </div>
+            <div class="choices">
+                <button class="choice-button" onclick="goToForest()">🌲 Enter the Whispering Forest</button>
+                <button class="choice-button" onclick="goToMountain()">🏔️ Climb the Frost-Touched Mountain</button>
+                <button class="choice-button" onclick="goToVillage()">🏘️ Visit the Silent Village</button>
+            </div>
+        </div>
+
+        <!-- Forest Encounter -->
+        <div id="forest" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">🐺</span>
+                Deep in the Whispering Pines, you discover footprints in the snow leading toward an ancient clearing. A silver wolf appears, its eyes gleaming with otherworldly intelligence. It seems to beckon you deeper into the forest, but the safe path back to the village grows fainter with each step.
+                <span class="emoji">🌲</span>
+            </div>
+            <div class="choices">
+                <button class="choice-button" onclick="followWolf()">🐺 Follow the Mysterious Wolf</button>
+                <button class="choice-button" onclick="returnToPath()">🛤️ Return to the Safe Path</button>
+            </div>
+        </div>
+
+        <!-- Mountain Encounter -->
+        <div id="mountain" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">🗻</span>
+                Halfway up the treacherous mountain, you find a hidden cave entrance marked with ancient runes. Inside, the walls shimmer with ice crystals, and you hear the distant sound of someone humming old festival songs. The cave splits into two passages - one warm with the glow of fire, one dark and mysterious.
+                <span class="emoji">🔥</span>
+            </div>
+            <div class="choices">
+                <button class="choice-button" onclick="lightFire()">🔥 Light a Fire and Call Out</button>
+                <button class="choice-button" onclick="searchDeeper()">🕳️ Search the Deeper Caves</button>
+            </div>
+        </div>
+
+        <!-- Village Encounter -->
+        <div id="village" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">🏠</span>
+                In the heart of the village, you find the old tavern door standing ajar. Inside, a warm fire crackles in the hearth, but no one is present. On the central table lies an open journal filled with half-written stories and sketched maps of secret places around the festival grounds.
+                <span class="emoji">📖</span>
+            </div>
+            <div class="choices">
+                <button class="choice-button" onclick="readJournal()">📖 Read the Mysterious Journal</button>
+                <button class="choice-button" onclick="waitForOwner()">⏰ Wait for the Owner's Return</button>
+            </div>
+        </div>
+
+        <!-- Endings -->
+        <div id="ending1" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">🌟</span>
+                Following the wolf leads you to a magical clearing where the Storyteller sits in communion with the forest spirits. They have been learning new tales from the ancient woods themselves! Together, you return to the festival with stories more wonderful than ever before. The Winter Festival becomes legendary, with tales of the night the stories came alive.
+                <span class="emoji">✨</span>
+            </div>
+            <button class="restart-button" onclick="restartStory()">🔄 Restart Story</button>
+        </div>
+
+        <div id="ending2" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">🎭</span>
+                Choosing the safe path, you discover the Storyteller's abandoned performance mask caught in the branches. With this sacred artifact, you realize you must become the new Storyteller. Though nervous, you return to the festival and discover you have the gift within you. The winter night fills with your voice, and the tradition continues through your courage.
+                <span class="emoji">🎪</span>
+            </div>
+            <button class="restart-button" onclick="restartStory()">🔄 Restart Story</button>
+        </div>
+
+        <div id="ending3" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">🔥</span>
+                Your fire draws the Storyteller out from the deepest cave chamber, where they had been trapped by an unexpected rockfall. Grateful for your rescue, they share with you the most precious story of all - the legend of how the Winter Festival began with one person's kindness to a stranger. You both return as heroes of the night.
+                <span class="emoji">🏆</span>
+            </div>
+            <button class="restart-button" onclick="restartStory()">🔄 Restart Story</button>
+        </div>
+
+        <div id="ending4" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">💎</span>
+                In the deep caves, you find an underground library of crystallized stories - ancient tales preserved in ice. The Storyteller appears, having been researching these forgotten legends. Together, you discover stories older than the festival itself. You return not just with the Storyteller, but with treasures of forgotten wisdom that make this the most magical Winter Festival in generations.
+                <span class="emoji">📚</span>
+            </div>
+            <button class="restart-button" onclick="restartStory()">🔄 Restart Story</button>
+        </div>
+
+        <div id="ending5" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">📝</span>
+                The journal reveals a map to the Storyteller's secret workshop beneath the village. Following its guidance, you find them crafting entirely new stories for the festival - tales of hope and wonder for these dark winter times. They invite you to co-create the evening's stories. The festival becomes an interactive celebration where every villager contributes to the tale.
+                <span class="emoji">🤝</span>
+            </div>
+            <button class="restart-button" onclick="restartStory()">🔄 Restart Story</button>
+        </div>
+
+        <div id="ending6" class="story-content hidden">
+            <div class="story-text">
+                <span class="emoji">👻</span>
+                Your patience is rewarded when the tavern owner returns - revealing themselves to be the Storyteller in disguise! They had been observing the villagers' reactions to the missing stories, gathering inspiration for a grand tale about community and searching for what matters most. Your choice to wait becomes part of the story they tell that very night.
+                <span class="emoji">🎬</span>
+            </div>
+            <button class="restart-button" onclick="restartStory()">🔄 Restart Story</button>
+        </div>
+    </div>
+
+    <script>
+        // Snowfall animation
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄️';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
+            snowflake.style.opacity = Math.random();
+            document.body.appendChild(snowflake);
+
+            setTimeout(() => {
+                snowflake.remove();
+            }, 5000);
+        }
+
+        setInterval(createSnowflake, 300);
+
+        // Story navigation functions
+        function hideAll() {
+            document.querySelectorAll('.story-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+        }
+
+        function showScene(sceneId) {
+            hideAll();
+            document.getElementById(sceneId).classList.remove('hidden');
+        }
+
+        function goToForest() {
+            showScene('forest');
+        }
+
+        function goToMountain() {
+            showScene('mountain');
+        }
+
+        function goToVillage() {
+            showScene('village');
+        }
+
+        function followWolf() {
+            showScene('ending1');
+        }
+
+        function returnToPath() {
+            showScene('ending2');
+        }
+
+        function lightFire() {
+            showScene('ending3');
+        }
+
+        function searchDeeper() {
+            showScene('ending4');
+        }
+
+        function readJournal() {
+            showScene('ending5');
+        }
+
+        function waitForOwner() {
+            showScene('ending6');
+        }
+
+        function restartStory() {
+            showScene('start');
+        }
+    </script>
+</body>
+</html>
