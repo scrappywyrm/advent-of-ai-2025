@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homecoming Board Flight Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #0b1026;
+            color: #00ffff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .hud-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #00ffff;
+            margin-bottom: 10px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            position: relative;
+        }
+        
+        .flight-board {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+        
+        .flight-item {
+            background: rgba(0, 255, 255, 0.15);
+            border: 1px solid #00ffff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .flight-item:hover,
+        .flight-item.selected {
+            background: rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transform: scale(1.02);
+        }
+        
+        .flight-number {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .flight-details {
+            font-size: 1em;
+            opacity: 0.8;
+        }
+        
+        .status {
+            float: right;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+        
+        .status.on-time { background-color: #00ff00; color: #000; }
+        .status.delayed { background-color: #ff6600; color: #fff; }
+        .status.boarding { background-color: #ffff00; color: #000; }
+        .status.departed { background-color: #ff0000; color: #fff; }
+        
+        .decorations {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .igloo {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 4em;
+        }
+        
+        .igloo-svg {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .reindeer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3em;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .video-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 200px;
+            height: 150px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            overflow: hidden;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        .video-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        
+        .gesture-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 40px;
+            border-radius: 15px;
+            border: 3px solid #00ffff;
+            z-index: 1000;
+            display: none;
+            text-shadow: 0 0 20px #00ffff;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        }
+        
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .snowflake {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1em;
+            animation: fall linear infinite;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        
+        .canvas-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+    <div class="hud-container">
+        <div class="header">
+            <h1>❄️ HOMECOMING BOARD ❄️</h1>
+            <div>Arctic Flight Control • Gesture Navigation Active</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="flight-board" id="flightBoard">
+                <!-- Flight data will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="decorations">
+            <div class="igloo">
+                <svg class="igloo-svg" viewBox="0 0 120 120">
+                    <circle cx="60" cy="80" r="35" fill="#e6f3ff" stroke="#00ffff" stroke-width="2"/>
+                    <rect x="50" y="75" width="20" height="25" fill="#0b1026" stroke="#00ffff" stroke-width="1"/>
+                    <circle cx="60" cy="60" r="25" fill="#f0f8ff" stroke="#00ffff" stroke-width="2"/>
+                    <circle cx="60" cy="45" r="15" fill="#ffffff" stroke="#00ffff" stroke-width="2"/>
+                </svg>
+            </div>
+            <div class="reindeer">🦌</div>
+        </div>
+        
+        <div class="snowflakes" id="snowflakes">
+            <!-- Snow will be generated by JavaScript -->
+        </div>
+        
+        <div class="video-container">
+            <video class="video-feed" id="videoFeed" autoplay muted playsinline></video>
+        </div>
+        
+        <div class="gesture-overlay" id="gestureOverlay"></div>
+    </div>
+    
+    <canvas class="canvas-overlay" id="canvasOverlay"></canvas>
+    
+    <script>
+        // Mock flight data
+        const mockFlights = [
+            {
+                flight: "NA001", 
+                route: "North Pole → New York", 
+                time: "15:30", 
+                gate: "A1", 
+                status: "on-time"
+            },
+            {
+                flight: "SP002", 
+                route: "Santa's Workshop → London", 
+                time: "16:15", 
+                gate: "B3", 
+                status: "boarding"
+            },
+            {
+                flight: "EF003", 
+                route: "Elf Station → Tokyo", 
+                time: "17:00", 
+                gate: "C2", 
+                status: "delayed"
+            },
+            {
+                flight: "RD004", 
+                route: "Reindeer Base → Paris", 
+                time: "14:45", 
+                gate: "A5", 
+                status: "departed"
+            },
+            {
+                flight: "IC005", 
+                route: "Ice Castle → Berlin", 
+                time: "18:30", 
+                gate: "B1", 
+                status: "on-time"
+            },
+            {
+                flight: "WS006", 
+                route: "Winter Station → Madrid", 
+                time: "19:15", 
+                gate: "C4", 
+                status: "boarding"
+            },
+            {
+                flight: "AR007", 
+                route: "Aurora Ridge → Rome", 
+                time: "20:00", 
+                gate: "A3", 
+                status: "on-time"
+            },
+            {
+                flight: "GL008", 
+                route: "Glacier Lake → Sydney", 
+                time: "21:30", 
+                gate: "B2", 
+                status: "delayed"
+            }
+        ];
+        
+        let currentScroll = 0;
+        let selectedFlight = null;
+        let lastHandPosition = null;
+        let gestureStartTime = 0;
+        let isScrolling = false;
+        
+        // Initialize flight board
+        function initFlightBoard() {
+            const flightBoard = document.getElementById('flightBoard');
+            flightBoard.innerHTML = '';
+            
+            mockFlights.forEach((flight, index) => {
+                const flightDiv = document.createElement('div');
+                flightDiv.className = 'flight-item';
+                flightDiv.dataset.index = index;
+                flightDiv.innerHTML = `
+                    <div class="flight-number">${flight.flight}</div>
+                    <div class="flight-details">
+                        ${flight.route}<br>
+                        Departure: ${flight.time} | Gate: ${flight.gate}
+                        <span class="status ${flight.status}">${flight.status.toUpperCase()}</span>
+                    </div>
+                `;
+                flightBoard.appendChild(flightDiv);
+            });
+        }
+        
+        // Snow animation
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.innerHTML = ['❄', '❅', '❆'][Math.floor(Math.random() * 3)];
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
+            snowflake.style.opacity = Math.random() * 0.7 + 0.3;
+            document.getElementById('snowflakes').appendChild(snowflake);
+            
+            setTimeout(() => {
+                snowflake.remove();
+            }, 5000);
+        }
+        
+        setInterval(createSnowflake, 300);
+        
+        // MediaPipe Hands setup
+        const videoElement = document.getElementById('videoFeed');
+        const canvasElement = document.getElementById('canvasOverlay');
+        const canvasCtx = canvasElement.getContext('2d');
+        const gestureOverlay = document.getElementById('gestureOverlay');
+        
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            
+            if (results.multiHandLandmarks) {
+                for (const landmarks of results.multiHandLandmarks) {
+                    detectGesture(landmarks);
+                }
+            }
+            canvasCtx.restore();
+        }
+        
+        // Gesture detection using landmark geometry
+        function detectGesture(landmarks) {
+            if (!landmarks || landmarks.length !== 21) return;
+            
+            // Key landmarks
+            const thumb_tip = landmarks[4];
+            const index_tip = landmarks[8];
+            const index_mcp = landmarks[5];
+            const middle_tip = landmarks[12];
+            const ring_tip = landmarks[16];
+            const pinky_tip = landmarks[20];
+            const wrist = landmarks[0];
+            
+            // Calculate distances
+            const thumbIndexDist = Math.sqrt(
+                Math.pow(thumb_tip.x - index_tip.x, 2) + 
+                Math.pow(thumb_tip.y - index_tip.y, 2)
+            );
+            
+            const indexExtended = index_tip.y < index_mcp.y;
+            const middleExtended = middle_tip.y < landmarks[9].y;
+            const ringExtended = ring_tip.y < landmarks[13].y;
+            const pinkyExtended = pinky_tip.y < landmarks[17].y;
+            
+            const fingersExtended = [indexExtended, middleExtended, ringExtended, pinkyExtended].filter(f => f).length;
+            
+            // Current hand position
+            const handX = wrist.x;
+            
+            // Gesture Recognition
+            if (thumbIndexDist < 0.05) {
+                // Pinch gesture - DISMISS
+                showGestureOverlay('DISMISSED');
+                selectedFlight = null;
+                clearSelection();
+            } else if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
+                // Index finger pointing - SELECT
+                selectFlightAtCenter();
+            } else if (fingersExtended === 0) {
+                // Closed fist - SELECT
+                selectFlightAtCenter();
+            } else if (fingersExtended >= 3) {
+                // Open hand - SCROLL
+                if (lastHandPosition !== null) {
+                    const deltaX = handX - lastHandPosition;
+                    if (Math.abs(deltaX) > 0.02) {
+                        scrollFlights(deltaX > 0 ? 1 : -1);
+                        showGestureOverlay('SCROLLING MODE');
+                        isScrolling = true;
+                        setTimeout(() => { isScrolling = false; }, 1000);
+                    }
+                }
+                lastHandPosition = handX;
+            }
+            
+            // Clear overlay after delay if not actively gesturing
+            if (!isScrolling && gestureOverlay.style.display === 'block') {
+                setTimeout(() => {
+                    if (!isScrolling) {
+                        gestureOverlay.style.display = 'none';
+                    }
+                }, 2000);
+            }
+        }
+        
+        function showGestureOverlay(text) {
+            gestureOverlay.textContent = text;
+            gestureOverlay.style.display = 'block';
+            
+            if (text === 'DISMISSED') {
+                setTimeout(() => {
+                    gestureOverlay.style.display = 'none';
+                }, 1500);
+            }
+        }
+        
+        function selectFlightAtCenter() {
+            const flightItems = document.querySelectorAll('.flight-item');
+            const centerIndex = Math.floor(flightItems.length / 2) + currentScroll;
+            const targetIndex = Math.max(0, Math.min(centerIndex, flightItems.length - 1));
+            
+            clearSelection();
+            
+            if (flightItems[targetIndex]) {
+                flightItems[targetIndex].classList.add('selected');
+                selectedFlight = targetIndex;
+                showGestureOverlay(`SELECTED: ${mockFlights[targetIndex].flight}`);
+            }
+        }
+        
+        function scrollFlights(direction) {
+            currentScroll = Math.max(0, Math.min(currentScroll + direction, mockFlights.length - 1));
+            const flightBoard = document.getElementById('flightBoard');
+            const scrollAmount = currentScroll * 80;
+            flightBoard.style.transform = `translateY(-${scrollAmount}px)`;
+        }
+        
+        function clearSelection() {
+            document.querySelectorAll('.flight-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+        }
+        
+        const hands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
+        
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        
+        hands.onResults(onResults);
+        
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 640,
+            height: 480
+        });
+        
+        // Resize canvas to match window
+        function resizeCanvas() {
+            canvasElement.width = window.innerWidth;
+            canvasElement.height = window.innerHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Initialize
+        initFlightBoard();
+        camera.start();
+    </script>
+</body>
+</html>

@@ -6,7 +6,9 @@ import itertools
 import re
 
 # CONFIGURATION
-OPERATOR_DIR = "/home/brucee/goose-operator"
+# Remote-Ready Configuration
+DEFAULT_HOME = "/home/brucee/goose-operator"
+OPERATOR_DIR = os.getenv("GOOSE_OPERATOR_HOME", DEFAULT_HOME)
 OPERATOR_PYTHON = f"{OPERATOR_DIR}/venv/bin/python3"
 OPERATOR_SCRIPT = f"{OPERATOR_DIR}/goose_operator/main.py"
 
