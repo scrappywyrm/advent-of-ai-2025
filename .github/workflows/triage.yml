@@ -23,9 +23,9 @@ jobs:
     - name: Install Goose and Dependencies
       run: |
         python -m pip install --upgrade pip
-        # Force install a recent version of langfuse containing 'decorators'
-        pip install goose-ai "langfuse>=2.0.0" --upgrade --force-reinstall
-        # Debug: Print versions to the log so we can see what happened
+        # Pin langfuse to version 2.x to avoid breaking changes in v3
+        pip install goose-ai "langfuse<3.0.0" --upgrade --force-reinstall
+        # Debug: Verify we got a 2.x version
         pip list | grep -E "goose|langfuse|exchange"
         
     - name: Configure GitHub CLI
