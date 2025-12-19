@@ -1,0 +1,36 @@
+name: Festival Feedback Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Goose
+      run: |
+        pip install goose-ai
+        
+    - name: Configure GitHub CLI
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+        
+    - name: Run Festival Triage
+      env:
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        goose run --instructions Day06/policies/triage_policy.md --text "Please triage this issue.\nTitle: ${{ github.event.issue.title }}\nBody: ${{ github.event.issue.body }}\nIssue Number: ${{ github.event.issue.number }}"
