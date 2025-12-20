@@ -36,14 +36,19 @@ jobs:
       env:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOOSE_PROVIDER: openrouter
-        GOOSE_MODEL: anthropic/claude-3.5-sonnet
+        # CRITICAL: Tell Python not to use the OS Keyring (fixes the crash)
+        PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
       run: |
-        # 1. Create a combined instruction file
-        # Start with the Policy
-        cat Day06/policies/triage_policy.md > instructions.txt
+        # 1. Setup Goose Configuration (Force OpenRouter)
+        mkdir -p ~/.config/goose
+        cat <<EOF > ~/.config/goose/profiles.yaml
+        default:
+          provider: openrouter
+          model: anthropic/claude-3.5-sonnet
+        EOF
           
-        # Append the specific Issue details
+        # 2. Prepare Instructions (Policy + Issue)
+        cat Day06/policies/triage_policy.md > instructions.txt
         echo "" >> instructions.txt
         echo "---" >> instructions.txt
         echo "INCOMING REQUEST:" >> instructions.txt
@@ -52,7 +57,9 @@ jobs:
         echo "Body: ${{ github.event.issue.body }}" >> instructions.txt
         echo "Issue Number: ${{ github.event.issue.number }}" >> instructions.txt
           
-        # 2. Run Goose pointing to the file
-        # We use 'cat' to debug what we are sending, then run it
-        cat instructions.txt
+        # 3. Run Goose
+        # We cat the profile to debug, then run
+        echo "Using Profile:"
+        cat ~/.config/goose/profiles.yaml
+          
         goose run instructions.txt
