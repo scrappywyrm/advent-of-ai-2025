@@ -1,4 +1,4 @@
-name: Issue Triage with Goose
+name: Issue Triage with Direct API
 
 on:
   issues:
@@ -17,49 +17,128 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: Install Goose with pinned dependencies
+    - name: Install Python dependencies
       run: |
-        pip install goose-ai "langfuse<3.0.0"
+        pip install requests
     
-    - name: Create Goose configuration directory
+    - name: Create triage script
       run: |
-        mkdir -p ~/.config/goose
-    
-    - name: Generate Goose profiles configuration
-      run: |
-        cat > ~/.config/goose/profiles.yaml << 'EOF'
-        default:
-          provider: openai
-          processor: openai/gpt-4o
-          accelerator: openai/gpt-4o
-          moderator: openai/gpt-4o
-          api_base: https://openrouter.ai/api/v1
+        cat > triage.py << 'EOF'
+        import os
+        import json
+        import requests
+        import sys
+        
+        # Get environment variables
+        api_key = os.environ.get('OPENROUTER_API_KEY')
+        issue_title = os.environ.get('ISSUE_TITLE')
+        issue_body = os.environ.get('ISSUE_BODY', '')
+        
+        if not api_key:
+            print("Error: OPENROUTER_API_KEY not found")
+            sys.exit(1)
+        
+        if not issue_title:
+            print("Error: ISSUE_TITLE not found")
+            sys.exit(1)
+        
+        # Prepare the prompt
+        prompt = f"""Analyze this GitHub issue and provide a triage response.
+        
+        Issue Title: {issue_title}
+        Issue Body: {issue_body}
+        
+        Please analyze this issue and return a JSON object with exactly these keys:
+        - "label": one of "bug", "feature", "question", or "urgent"
+        - "comment": a helpful response to the issue author
+        
+        Return only the JSON object, no other text."""
+        
+        # Make API request to OpenRouter
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": "anthropic/claude-3.5-sonnet",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            "max_tokens": 1000
+        }
+        
+        try:
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=data,
+                timeout=60
+            )
+            response.raise_for_status()
+            
+            # Parse response
+            result = response.json()
+            content = result['choices'][0]['message']['content']
+            
+            # Parse JSON from content
+            triage_result = json.loads(content.strip())
+            
+            # Write outputs
+            with open('triage_output.json', 'w') as f:
+                json.dump(triage_result, f)
+            
+            print(f"Triage completed successfully")
+            print(f"Label: {triage_result.get('label', 'unknown')}")
+            print(f"Comment: {triage_result.get('comment', 'No comment')}")
+            
+        except requests.exceptions.RequestException as e:
+            print(f"API request failed: {e}")
+            sys.exit(1)
+        except (json.JSONDecodeError, KeyError) as e:
+            print(f"Failed to parse response: {e}")
+            print(f"Raw content: {content}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            sys.exit(1)
         EOF
     
-    - name: Create instructions file
-      run: |
-        echo "# Triage Policy" > instructions.txt
-        echo "" >> instructions.txt
-        cat Day06/policies/triage_policy.md >> instructions.txt
-        echo "" >> instructions.txt
-        echo "# Issue to Triage" >> instructions.txt
-        echo "" >> instructions.txt
-        echo "**Title:** ${{ github.event.issue.title }}" >> instructions.txt
-        echo "" >> instructions.txt
-        echo "**Body:**" >> instructions.txt
-        echo "${{ github.event.issue.body }}" >> instructions.txt
-    
-    - name: Run Goose triage
+    - name: Run triage analysis
       env:
-        PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
-        OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        OPENAI_BASE_URL: https://openrouter.ai/api/v1
-        OPENAI_API_BASE: https://openrouter.ai/api/v1
-        GOOSE_PROVIDER: openai
-        GOOSE_MODEL: anthropic/claude-3.5-sonnet
+        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        ISSUE_TITLE: ${{ github.event.issue.title }}
+        ISSUE_BODY: ${{ github.event.issue.body }}
       run: |
-        goose run instructions.txt
+        python triage.py
+    
+    - name: Apply triage results
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Read triage results
+        if [ -f "triage_output.json" ]; then
+          LABEL=$(python -c "import json; print(json.load(open('triage_output.json'))['label'])")
+          COMMENT=$(python -c "import json; print(json.load(open('triage_output.json'))['comment'])")
+          
+          echo "Applying label: $LABEL"
+          echo "Adding comment: $COMMENT"
+          
+          # Apply label to issue
+          gh issue edit ${{ github.event.issue.number }} --add-label "$LABEL"
+          
+          # Add comment to issue
+          gh issue comment ${{ github.event.issue.number }} --body "$COMMENT"
+          
+          echo "Triage completed successfully"
+        else
+          echo "Error: triage_output.json not found"
+          exit 1
+        fi
     
     - name: Clean up temporary files
       run: |
-        rm -f instructions.txt
+        rm -f triage.py triage_output.json
