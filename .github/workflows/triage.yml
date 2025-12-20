@@ -29,7 +29,7 @@ jobs:
       run: |
         cat > ~/.config/goose/profiles.yaml << 'EOF'
         default:
-          provider: openai
+          provider: anthropic
           processor: anthropic/claude-3.5-sonnet
           accelerator: anthropic/claude-3.5-sonnet
           moderator: passive
@@ -51,9 +51,8 @@ jobs:
     - name: Run Goose triage
       env:
         PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
-        OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        OPENAI_BASE_URL: https://openrouter.ai/api/v1
-        OPENAI_API_BASE: https://openrouter.ai/api/v1
+        ANTHROPIC_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        ANTHROPIC_BASE_URL: https://openrouter.ai/api/v1
       run: |
         goose run instructions.txt
     
