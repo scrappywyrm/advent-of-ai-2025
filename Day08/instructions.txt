@@ -1,0 +1,10 @@
+You are a Data Transformation Engine.
+
+TASK:
+1. Parse the messy text below into a structured JSON object with a root key "vendors".
+2. Clean the data (Title Case names, remove noise like "!!!").
+3. IMPORTANT: Use your file writing tool to SAVE the output to a file named "dmitris-sanity-saver.json".
+   - Do NOT just print the JSON to the chat.
+   - You MUST write the file to the current directory.
+
+INPUT DATA:
