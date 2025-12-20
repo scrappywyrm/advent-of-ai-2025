@@ -47,7 +47,7 @@ jobs:
             provider: openai
             processor: anthropic/claude-3.5-sonnet
             accelerator: anthropic/claude-3.5-sonnet
-            moderator: anthropic/claude-3.5-sonnet
+            moderator: passive
           EOF
           
           # 2. Prepare Instructions (Policy + Issue Data)
