@@ -127,6 +127,11 @@ jobs:
           echo "Applying label: $LABEL"
           echo "Adding comment: $COMMENT"
           
+          # Check if label exists, create if not
+          if ! gh label list | grep -q "$LABEL"; then
+            gh label create "$LABEL" --color FF0000 --description "Created by AI Triage" || true
+          fi
+          
           # Apply label to issue
           gh issue edit ${{ github.event.issue.number }} --add-label "$LABEL"
           
