@@ -10,56 +10,56 @@ jobs:
     permissions:
       issues: write
       contents: read
-      
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-        
-    - name: Install Goose and Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        # Pin langfuse to version 2.x to avoid breaking changes in v3
-        pip install goose-ai "langfuse<3.0.0" --upgrade --force-reinstall
-        # Debug: Verify we got a 2.x version
-        pip list | grep -E "goose|langfuse|exchange"
-        
-    - name: Configure GitHub CLI
-      run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-        
-    - name: Run Festival Triage
-      env:
-        OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # CRITICAL: Tell Python not to use the OS Keyring (fixes the crash)
-        PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
-      run: |
-        # 1. Setup Goose Configuration (Force OpenRouter)
-        mkdir -p ~/.config/goose
-        cat <<EOF > ~/.config/goose/profiles.yaml
-        default:
-          provider: openrouter
-          model: anthropic/claude-3.5-sonnet
-        EOF
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Goose and Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # Pin langfuse to version 2.x to avoid breaking changes in v3
+          pip install goose-ai "langfuse<3.0.0" --upgrade --force-reinstall
+          # Debug: Verify installed versions
+          pip list | grep -E "goose|langfuse|exchange"
+
+      - name: Run Festival Triage
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # CRITICAL: Disable OS Keyring to prevent crashes on headless runner
+          PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
+          # Set Model via Env Vars (Config file schema is strict in v0.9.11)
+          GOOSE_PROVIDER: openrouter
+          GOOSE_MODEL: anthropic/claude-3.5-sonnet
+        run: |
+          # 1. Setup Goose Configuration (Minimal)
+          # We only specify provider to avoid "unexpected keyword argument" errors
+          mkdir -p ~/.config/goose
+          cat <<EOF > ~/.config/goose/profiles.yaml
+          default:
+            provider: openrouter
+          EOF
           
-        # 2. Prepare Instructions (Policy + Issue)
-        cat Day06/policies/triage_policy.md > instructions.txt
-        echo "" >> instructions.txt
-        echo "---" >> instructions.txt
-        echo "INCOMING REQUEST:" >> instructions.txt
-        echo "Please triage this issue." >> instructions.txt
-        echo "Title: ${{ github.event.issue.title }}" >> instructions.txt
-        echo "Body: ${{ github.event.issue.body }}" >> instructions.txt
-        echo "Issue Number: ${{ github.event.issue.number }}" >> instructions.txt
+          # 2. Prepare Instructions (Policy + Issue Data)
+          # We combine the Policy file and the Issue details into one text file
+          cat Day06/policies/triage_policy.md > instructions.txt
+          echo "" >> instructions.txt
+          echo "---" >> instructions.txt
+          echo "INCOMING REQUEST:" >> instructions.txt
+          echo "Please triage this issue." >> instructions.txt
+          echo "Title: ${{ github.event.issue.title }}" >> instructions.txt
+          echo "Body: ${{ github.event.issue.body }}" >> instructions.txt
+          echo "Issue Number: ${{ github.event.issue.number }}" >> instructions.txt
           
-        # 3. Run Goose
-        # We cat the profile to debug, then run
-        echo "Using Profile:"
-        cat ~/.config/goose/profiles.yaml
+          # 3. Run Goose
+          echo "Debug: Using Profile:"
+          cat ~/.config/goose/profiles.yaml
           
-        goose run instructions.txt
+          # Pass the file path as the argument (CLI v0.9.11 requirement)
+          goose run instructions.txt
