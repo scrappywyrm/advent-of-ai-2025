@@ -32,22 +32,24 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # CRITICAL: Disable OS Keyring to prevent crashes on headless runner
+          # CRITICAL: Disable OS Keyring to prevent crashes
           PYTHON_KEYRING_BACKEND: keyring.backends.null.Keyring
-          # Set Model via Env Vars (Config file schema is strict in v0.9.11)
+          # Set explicit model env vars just in case
           GOOSE_PROVIDER: openrouter
           GOOSE_MODEL: anthropic/claude-3.5-sonnet
         run: |
-          # 1. Setup Goose Configuration (Minimal)
-          # We only specify provider to avoid "unexpected keyword argument" errors
+          # 1. Setup Goose Configuration (The "Full Schema" Fix)
+          # v0.9.11 requires explicit definition of processor, accelerator, and moderator
           mkdir -p ~/.config/goose
           cat <<EOF > ~/.config/goose/profiles.yaml
           default:
             provider: openrouter
+            processor: anthropic/claude-3.5-sonnet
+            accelerator: anthropic/claude-3.5-sonnet
+            moderator: anthropic/claude-3.5-sonnet
           EOF
           
           # 2. Prepare Instructions (Policy + Issue Data)
-          # We combine the Policy file and the Issue details into one text file
           cat Day06/policies/triage_policy.md > instructions.txt
           echo "" >> instructions.txt
           echo "---" >> instructions.txt
@@ -61,5 +63,5 @@ jobs:
           echo "Debug: Using Profile:"
           cat ~/.config/goose/profiles.yaml
           
-          # Pass the file path as the argument (CLI v0.9.11 requirement)
+          # Pass the file path (CLI requirement)
           goose run instructions.txt
