@@ -45,6 +45,7 @@ jobs:
           cat <<EOF > ~/.config/goose/profiles.yaml
           default:
             provider: openai
+            api_base: https://openrouter.ai/api/v1
             processor: anthropic/claude-3.5-sonnet
             accelerator: anthropic/claude-3.5-sonnet
             moderator: passive
