@@ -36,15 +36,23 @@ jobs:
       env:
         OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GOOSE_PROVIDER: openrouter
+        GOOSE_MODEL: anthropic/claude-3.5-sonnet
       run: |
-        # 1. Read the policy file into a variable
-        POLICY=$(cat Day06/policies/triage_policy.md)
-        # 2. Run Goose with the Policy + Issue Data combined
-        goose run --text "$POLICY
-      
-        ---
-        INCOMING REQUEST:
-        Please triage this issue.
-        Title: ${{ github.event.issue.title }}
-        Body: ${{ github.event.issue.body }}
-        Issue Number: ${{ github.event.issue.number }}"
+        # 1. Create a combined instruction file
+        # Start with the Policy
+        cat Day06/policies/triage_policy.md > instructions.txt
+          
+        # Append the specific Issue details
+        echo "" >> instructions.txt
+        echo "---" >> instructions.txt
+        echo "INCOMING REQUEST:" >> instructions.txt
+        echo "Please triage this issue." >> instructions.txt
+        echo "Title: ${{ github.event.issue.title }}" >> instructions.txt
+        echo "Body: ${{ github.event.issue.body }}" >> instructions.txt
+        echo "Issue Number: ${{ github.event.issue.number }}" >> instructions.txt
+          
+        # 2. Run Goose pointing to the file
+        # We use 'cat' to debug what we are sending, then run it
+        cat instructions.txt
+        goose run instructions.txt
