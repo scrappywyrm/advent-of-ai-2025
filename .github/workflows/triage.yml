@@ -4,6 +4,11 @@ on:
   issues:
     types: [opened, edited]
 
+permissions:
+  issues: write
+  contents: read
+  repository-projects: read
+
 jobs:
   triage:
     runs-on: ubuntu-latest
@@ -28,6 +33,7 @@ jobs:
         import json
         import requests
         import sys
+        import re
         
         # Get environment variables
         api_key = os.environ.get('OPENROUTER_API_KEY')
@@ -52,7 +58,7 @@ jobs:
         - "label": one of "bug", "feature", "question", or "urgent"
         - "comment": a helpful response to the issue author
         
-        Return only the JSON object, no other text."""
+        Return valid JSON. Do not include unescaped newlines in the string values. Return only the JSON object, no other text."""
         
         # Make API request to OpenRouter
         headers = {
@@ -84,8 +90,32 @@ jobs:
             result = response.json()
             content = result['choices'][0]['message']['content']
             
-            # Parse JSON from content
-            triage_result = json.loads(content.strip())
+            # Clean up common LLM JSON errors
+            # Find the JSON object
+            match = re.search(r'\{.*\}', content, re.DOTALL)
+            if match:
+                json_str = match.group()
+                # Attempt to clean unescaped newlines if json.loads fails
+                try:
+                    triage_result = json.loads(json_str)
+                except json.JSONDecodeError:
+                    # Fallback: simple manual extraction if JSON is broken
+                    label = "bug" # Default
+                    if "feature" in json_str.lower(): label = "feature"
+                    elif "question" in json_str.lower(): label = "question"
+                    elif "urgent" in json_str.lower(): label = "urgent"
+                    
+                    # extract comment roughly
+                    try:
+                        comment = json_str.split('"comment":')[1].strip().strip('"}').strip('"')
+                        # Clean up common artifacts
+                        comment = comment.replace('\\"', '"').replace('\\n', ' ')
+                    except:
+                        comment = "AI triage analysis completed."
+                    
+                    triage_result = {"label": label, "comment": comment}
+            else:
+                raise ValueError("No JSON found in response")
             
             # Write outputs
             with open('triage_output.json', 'w') as f:
@@ -127,15 +157,16 @@ jobs:
           echo "Applying label: $LABEL"
           echo "Adding comment: $COMMENT"
           
-          # Check if label exists, create if not
+          # Try to create label if missing, but don't fail if we can't
           if ! gh label list | grep -q "$LABEL"; then
-            gh label create "$LABEL" --color FF0000 --description "Created by AI Triage" || true
+            echo "Label $LABEL not found. Attempting to create..."
+            gh label create "$LABEL" --color FF0000 --description "Created by AI Triage" || echo "Warning: Could not create label. Permissions might be restricted."
           fi
           
-          # Apply label to issue
-          gh issue edit ${{ github.event.issue.number }} --add-label "$LABEL"
+          # Apply label (ignore error if label doesn't exist/couldn't be created)
+          gh issue edit ${{ github.event.issue.number }} --add-label "$LABEL" || echo "Warning: Failed to apply label."
           
-          # Add comment to issue
+          # Always post the comment
           gh issue comment ${{ github.event.issue.number }} --body "$COMMENT"
           
           echo "Triage completed successfully"
