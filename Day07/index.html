@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winter Festival Lost & Found Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #ffffff 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #c31432 0%, #240b36 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2a5298;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .urgent-section {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 6px 12px rgba(255, 71, 87, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 6px 12px rgba(255, 71, 87, 0.3); }
+            50% { box-shadow: 0 6px 20px rgba(255, 71, 87, 0.5); }
+            100% { box-shadow: 0 6px 12px rgba(255, 71, 87, 0.3); }
+        }
+
+        .urgent-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .urgent-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .urgent-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid #ffffff;
+        }
+
+        .urgent-item-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .urgent-item-details {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .search-controls {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-input, .filter-select {
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .inventory-section {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .inventory-section h2 {
+            background: linear-gradient(90deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            padding: 1.5rem;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        th {
+            background: #f8f9ff;
+            font-weight: 600;
+            cursor: pointer;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th:hover {
+            background: #e1e5e9;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .category-electronics {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .category-clothing {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .category-personal {
+            background: #45b7d1;
+            color: white;
+        }
+
+        .category-accessories {
+            background: #96ceb4;
+            color: white;
+        }
+
+        .category-other {
+            background: #feca57;
+            color: #333;
+        }
+
+        .urgent-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: #ff4757;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            animation: pulse-badge 1.5s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #666;
+            background: rgba(255,255,255,0.8);
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-row {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>❄️ Winter Festival Lost & Found ❄️</h1>
+        <p>Helping reunite treasures with their owners</p>
+    </header>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-items">121</div>
+                <div class="stat-label">Total Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="urgent-count">48</div>
+                <div class="stat-label">Urgent Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="clothing-count">46</div>
+                <div class="stat-label">Clothing Items</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="electronics-count">29</div>
+                <div class="stat-label">Electronics</div>
+            </div>
+        </div>
+
+        <!-- Urgent Items Section -->
+        <div class="urgent-section">
+            <h2>🚨 URGENT ATTENTION REQUIRED</h2>
+            <p style="margin-bottom: 1.5rem;">These items require immediate attention due to their value or importance:</p>
+            <div class="urgent-items" id="urgent-items-list">
+                <!-- Urgent items will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Search and Filter Controls -->
+        <div class="search-controls">
+            <div class="search-row">
+                <input type="text" id="search-input" class="search-input" placeholder="Search items, locations, descriptions...">
+                <select id="category-filter" class="filter-select">
+                    <option value="">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Personal Items">Personal Items</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="location-filter" class="filter-select">
+                    <option value="">All Locations</option>
+                    <option value="Ice Rink">Ice Rink</option>
+                    <option value="Hot Cocoa Stand">Hot Cocoa Stand</option>
+                    <option value="Storytelling Tent">Storytelling Tent</option>
+                    <option value="Fortune Teller Tent">Fortune Teller Tent</option>
+                    <option value="Parking Lot">Parking Lot</option>
+                </select>
+                <select id="urgent-filter" class="filter-select">
+                    <option value="">All Items</option>
+                    <option value="true">Urgent Only</option>
+                    <option value="false">Non-Urgent Only</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="inventory-section">
+            <h2>📋 Complete Inventory</h2>
+            <div class="table-container">
+                <table id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)">Item Description</th>
+                            <th onclick="sortTable(1)">Category</th>
+                            <th onclick="sortTable(2)">Location Found</th>
+                            <th onclick="sortTable(3)">Time Found</th>
+                            <th onclick="sortTable(4)">Urgency</th>
+                            <th onclick="sortTable(5)">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-tbody">
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>Winter Festival Lost & Found Dashboard | Contact staff for item claims</p>
+    </footer>
+
+    <script>
+        // Complete inventory data after processing
+        const inventoryData = [
+            {item: "Blue Scarf", category: "Clothing", location: "Ice Rink", time: "2:00 PM - Day 1", urgent: false, notes: "Found near ice skating area"},
+            {item: "Child's Red Mitten (Left Hand)", category: "Clothing", location: "Hot Cocoa Stand", time: "2:30 PM - Day 1", urgent: false, notes: "Left hand mitten for child"},
+            {item: "iPhone 13 Pro (Black Case)", category: "Electronics", location: "Storytelling Tent", time: "3:00 PM - Day 1", urgent: true, notes: "Black case, good condition"},
+            {item: "Toyota Keys + House Keys", category: "Personal Items", location: "Parking Lot", time: "3:45 PM - Day 1", urgent: true, notes: "Toyota key fob with house keys"},
+            {item: "Brown Leather Wallet (Men's)", category: "Personal Items", location: "Fortune Teller Tent", time: "4:00 PM - Day 1", urgent: true, notes: "Men's brown leather wallet"},
+            {item: "Purple Knit Beanie", category: "Clothing", location: "Ice Rink", time: "Day 1", urgent: false, notes: "Purple knit hat"},
+            {item: "Green Scarf with Snowflakes", category: "Clothing", location: "Storytelling Tent", time: "Day 1", urgent: false, notes: "Green with snowflake pattern"},
+            {item: "Black Gloves (Pair)", category: "Clothing", location: "Parking Lot", time: "5:00 PM - Day 1", urgent: false, notes: "Both gloves found together"},
+            {item: "AirPods Case (White)", category: "Electronics", location: "Ice Rink", time: "Day 1", urgent: true, notes: "White AirPods case"},
+            {item: "Pink iPhone Case (Empty)", category: "Accessories", location: "Fortune Teller Tent", time: "Day 1", urgent: false, notes: "Phone case without phone"},
+            {item: "Silver MacBook Pro", category: "Electronics", location: "Hot Cocoa Stand", time: "Day 2", urgent: true, notes: "URGENT - High value item"},
+            {item: "Tesla Key Fob", category: "Personal Items", location: "Parking Lot", time: "Day 2", urgent: true, notes: "URGENT - Car access"},
+            {item: "Gold Wedding Ring", category: "Personal Items", location: "Storytelling Tent", time: "Day 2", urgent: true, notes: "VERY URGENT - Wedding band"},
+            {item: "Child's Gray Backpack (Small)", category: "Accessories", location: "Hot Cocoa Stand", time: "Day 2", urgent: false, notes: "Small kids backpack"},
+            {item: "Ray-Ban Sunglasses (Black)", category: "Accessories", location: "Parking Lot", time: "Day 2", urgent: false, notes: "Black frames, Ray-Ban brand"},
+            {item: "Yellow Scarf", category: "Clothing", location: "Ice Rink", time: "Day 2", urgent: false, notes: "Yellow colored scarf"},
+            {item: "Red Striped Scarf", category: "Clothing", location: "Fortune Teller Tent", time: "Day 2", urgent: false, notes: "Red with white stripes"},
+            {item: "Blue Mittens (Pair)", category: "Clothing", location: "Ice Rink", time: "Day 2", urgent: false, notes: "Both mittens found"},
+            {item: "iPhone Lightning Charger", category: "Electronics", location: "Storytelling Tent", time: "Day 2", urgent: true, notes: "Lightning cable"},
+            {item: "Blue Metal Water Bottle", category: "Other", location: "Hot Cocoa Stand", time: "Day 2", urgent: false, notes: "Stainless steel, blue"},
+            {item: "Brown Teddy Bear", category: "Other", location: "Ice Rink", time: "Day 2", urgent: false, notes: "Child crying for lost bear"},
+            {item: "Canon DSLR Camera (Black)", category: "Electronics", location: "Parking Lot", time: "Day 2", urgent: true, notes: "URGENT - Expensive camera"},
+            {item: "White Pom-Pom Beanie", category: "Clothing", location: "Fortune Teller Tent", time: "Day 2", urgent: false, notes: "White knit with pom-pom"},
+            {item: "Green Gloves (Pair)", category: "Clothing", location: "Storytelling Tent", time: "Day 2", urgent: false, notes: "Both green gloves"},
+            {item: "Black Umbrella", category: "Accessories", location: "Parking Lot", time: "Day 2", urgent: false, notes: "Standard black umbrella"},
+            {item: "Pink Backpack (Large)", category: "Accessories", location: "Ice Rink", time: "Day 2", urgent: false, notes: "Large pink backpack"},
+            {item: "Black Prescription Glasses", category: "Accessories", location: "Hot Cocoa Stand", time: "Day 2", urgent: false, notes: "Black frames, prescription"},
+            {item: "Silver Chain Bracelet", category: "Personal Items", location: "Ice Rink", time: "Day 2", urgent: true, notes: "Silver bracelet, chain style"},
+            {item: "Red Women's Wallet", category: "Personal Items", location: "Fortune Teller Tent", time: "Day 2", urgent: true, notes: "Red female wallet"},
+            {item: "Child's Blue Jacket", category: "Clothing", location: "Storytelling Tent", time: "Day 2", urgent: false, notes: "Kids size blue coat"},
+            {item: "Black Laptop Bag (Empty)", category: "Accessories", location: "Parking Lot", time: "Day 3", urgent: false, notes: "Empty laptop bag"},
+            {item: "Long White Scarf", category: "Clothing", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Extra long white scarf"},
+            {item: "Honda Keys + 3 House Keys", category: "Personal Items", location: "Hot Cocoa Stand", time: "Day 3", urgent: true, notes: "Honda car key with 3 house keys"},
+            {item: "Samsung Galaxy (Cracked Screen)", category: "Electronics", location: "Storytelling Tent", time: "Day 3", urgent: true, notes: "URGENT - Broken screen"},
+            {item: "Women's Brown Boots (Size 8)", category: "Clothing", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Brown boots, women's size 8"},
+            {item: "Red Hat with Ear Flaps", category: "Clothing", location: "Fortune Teller Tent", time: "Day 3", urgent: false, notes: "Red winter hat with ear flaps"},
+            {item: "Small Black Crossbody Purse", category: "Personal Items", location: "Parking Lot", time: "Day 3", urgent: true, notes: "Small black crossbody style"},
+            {item: "Child's Green Mittens", category: "Clothing", location: "Hot Cocoa Stand", time: "Day 3", urgent: false, notes: "Kids green mittens"},
+            {item: "James Wilson's Black Wallet", category: "Personal Items", location: "Storytelling Tent", time: "Day 3", urgent: true, notes: "Contains ID for James Wilson"},
+            {item: "Yellow Knit Beanie", category: "Clothing", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Yellow knit hat"},
+            {item: "Silver iPad (Purple Case)", category: "Electronics", location: "Fortune Teller Tent", time: "Day 3", urgent: true, notes: "URGENT - Silver iPad in purple case"},
+            {item: "Long Gray Scarf", category: "Clothing", location: "Parking Lot", time: "Day 3", urgent: false, notes: "Gray scarf, long style"},
+            {item: "White Gloves (Pair)", category: "Clothing", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Both white gloves"},
+            {item: "Black North Face Backpack", category: "Accessories", location: "Hot Cocoa Stand", time: "Day 3", urgent: false, notes: "Black North Face brand"},
+            {item: "Gold Aviator Sunglasses", category: "Accessories", location: "Parking Lot", time: "Day 3", urgent: false, notes: "Gold frames, aviator style"},
+            {item: "Red Scarf", category: "Clothing", location: "Storytelling Tent", time: "Day 3", urgent: false, notes: "Red colored scarf"},
+            {item: "Clear Sparkly Phone Case (Empty)", category: "Accessories", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Clear with sparkles, no phone"},
+            {item: "Brown Women's Wallet", category: "Personal Items", location: "Fortune Teller Tent", time: "Day 3", urgent: true, notes: "Brown female wallet"},
+            {item: "Blue Jacket (Adult Large)", category: "Clothing", location: "Parking Lot", time: "Day 3", urgent: false, notes: "Adult size large, blue"},
+            {item: "Apartment Keys (Eiffel Tower Keychain)", category: "Personal Items", location: "Hot Cocoa Stand", time: "Day 3", urgent: true, notes: "Keys with Eiffel Tower keyring"},
+            {item: "Black Beanie", category: "Clothing", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Black knit beanie"},
+            {item: "Pink Scarf", category: "Clothing", location: "Storytelling Tent", time: "Day 3", urgent: false, notes: "Pink colored scarf"},
+            {item: "Silver Fitbit Watch", category: "Electronics", location: "Ice Rink", time: "Day 3", urgent: true, notes: "URGENT - Silver Fitbit watch"},
+            {item: "Child's Green Jacket", category: "Clothing", location: "Hot Cocoa Stand", time: "Day 3", urgent: false, notes: "Kids green coat"},
+            {item: "White Mittens (Pair)", category: "Clothing", location: "Fortune Teller Tent", time: "Day 3", urgent: false, notes: "Both white mittens"},
+            {item: "Red Umbrella", category: "Accessories", location: "Parking Lot", time: "Day 3", urgent: false, notes: "Red colored umbrella"},
+            {item: "Men's Brown Leather Gloves", category: "Clothing", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Men's brown leather gloves"},
+            {item: "USB-C Charging Cable", category: "Electronics", location: "Storytelling Tent", time: "Day 3", urgent: true, notes: "USB-C charger cable"},
+            {item: "Pink Water Bottle", category: "Other", location: "Hot Cocoa Stand", time: "Day 3", urgent: false, notes: "Pink water bottle"},
+            {item: "Gray Beanie", category: "Clothing", location: "Parking Lot", time: "Day 3", urgent: false, notes: "Gray beanie style hat"},
+            {item: "Small Child's Blue Backpack", category: "Accessories", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Small kids blue backpack"},
+            {item: "Black Scarf", category: "Clothing", location: "Fortune Teller Tent", time: "Day 3", urgent: false, notes: "Black colored scarf"},
+            {item: "Yellow Gloves (Pair)", category: "Clothing", location: "Storytelling Tent", time: "Day 3", urgent: false, notes: "Both yellow gloves"},
+            {item: "Black Sunglasses", category: "Accessories", location: "Hot Cocoa Stand", time: "Day 3", urgent: false, notes: "Black sunglasses"},
+            {item: "Child's Red Mittens", category: "Clothing", location: "Ice Rink", time: "Day 3", urgent: false, notes: "Kids red mittens"},
+            {item: "Short White Scarf", category: "Clothing", location: "Parking Lot", time: "Day 3", urgent: false, notes: "White scarf, short style"},
+            {item: "Green Hat", category: "Clothing", location: "Fortune Teller Tent", time: "Day 3", urgent: false, notes: "Green colored hat"}
+        ];
+
+        let currentSort = { column: 0, ascending: true };
+        let filteredData = [...inventoryData];
+
+        // Populate urgent items
+        function populateUrgentItems() {
+            const urgentItems = inventoryData.filter(item => item.urgent);
+            const urgentList = document.getElementById('urgent-items-list');
+            
+            urgentList.innerHTML = urgentItems.slice(0, 12).map(item => `
+                <div class="urgent-item">
+                    <div class="urgent-item-title">${item.item}</div>
+                    <div class="urgent-item-details">
+                        📍 ${item.location} | ⏰ ${item.time}<br>
+                        📝 ${item.notes}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Populate inventory table
+        function populateTable(data = filteredData) {
+            const tbody = document.getElementById('inventory-tbody');
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td>${item.item}</td>
+                    <td><span class="category-badge category-${item.category.toLowerCase().replace(' ', '-')}">${item.category}</span></td>
+                    <td>${item.location}</td>
+                    <td>${item.time}</td>
+                    <td>${item.urgent ? '<span class="urgent-badge">URGENT</span>' : ''}</td>
+                    <td>${item.notes}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Search and filter functionality
+        function filterTable() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('category-filter').value;
+            const locationFilter = document.getElementById('location-filter').value;
+            const urgentFilter = document.getElementById('urgent-filter').value;
+
+            filteredData = inventoryData.filter(item => {
+                const matchesSearch = !searchTerm || 
+                    item.item.toLowerCase().includes(searchTerm) ||
+                    item.location.toLowerCase().includes(searchTerm) ||
+                    item.notes.toLowerCase().includes(searchTerm) ||
+                    item.category.toLowerCase().includes(searchTerm);
+
+                const matchesCategory = !categoryFilter || item.category === categoryFilter;
+                const matchesLocation = !locationFilter || item.location === locationFilter;
+                const matchesUrgent = !urgentFilter || 
+                    (urgentFilter === 'true' && item.urgent) ||
+                    (urgentFilter === 'false' && !item.urgent);
+
+                return matchesSearch && matchesCategory && matchesLocation && matchesUrgent;
+            });
+
+            populateTable(filteredData);
+        }
+
+        // Sort table functionality
+        function sortTable(columnIndex) {
+            const columns = ['item', 'category', 'location', 'time', 'urgent', 'notes'];
+            const column = columns[columnIndex];
+            
+            if (currentSort.column === columnIndex) {
+                currentSort.ascending = !currentSort.ascending;
+            } else {
+                currentSort.column = columnIndex;
+                currentSort.ascending = true;
+            }
+
+            filteredData.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+                
+                if (column === 'urgent') {
+                    aVal = a[column] ? 1 : 0;
+                    bVal = b[column] ? 1 : 0;
+                }
+                
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+                
+                if (aVal < bVal) return currentSort.ascending ? -1 : 1;
+                if (aVal > bVal) return currentSort.ascending ? 1 : -1;
+                return 0;
+            });
+
+            populateTable(filteredData);
+        }
+
+        // Event listeners
+        document.getElementById('search-input').addEventListener('input', filterTable);
+        document.getElementById('category-filter').addEventListener('change', filterTable);
+        document.getElementById('location-filter').addEventListener('change', filterTable);
+        document.getElementById('urgent-filter').addEventListener('change', filterTable);
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            populateUrgentItems();
+            populateTable();
+        });
+    </script>
+</body>
+</html>
