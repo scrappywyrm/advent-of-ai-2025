@@ -34,6 +34,7 @@ jobs:
           # Goose v0.9.11 doesn't know "openrouter", so we use "openai" provider
           # but point the Base URL to OpenRouter.
           OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_BASE: https://openrouter.ai/api/v1
           OPENAI_BASE_URL: https://openrouter.ai/api/v1
           
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +46,6 @@ jobs:
           cat <<EOF > ~/.config/goose/profiles.yaml
           default:
             provider: openai
-            api_base: https://openrouter.ai/api/v1
             processor: anthropic/claude-3.5-sonnet
             accelerator: anthropic/claude-3.5-sonnet
             moderator: passive
