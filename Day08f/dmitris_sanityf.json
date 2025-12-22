@@ -1,0 +1,22 @@
+```json
+{
+  "vendors": [
+    {
+      "name": "Joes Hot Cocoa",
+      "location": "Main Plaza",
+      "category": "Hot Drinks & Pastries"
+    },
+    {
+      "name": "Taco Truck Del Fuego",
+      "location": "North Entrance",
+      "category": "Mexican Food"
+    },
+    {
+      "name": "Sweet Treats Bakery",
+      "location": "Near The Ice Rink",
+      "category": "Cookies"
+    }
+  ]
+}
+```
+
