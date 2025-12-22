@@ -1,0 +1,13 @@
+```json
+{
+  "classification": {
+    "type": "Bug",
+    "priority": "Critical",
+    "sentiment": "Frustrated"
+  },
+  "routing": {
+    "team": "Engineering",
+    "suggested_response": "Immediate investigation required - payment gateway timeout affecting revenue. Escalate to on-call engineer and begin debugging payment flow immediately."
+  }
+}
+```

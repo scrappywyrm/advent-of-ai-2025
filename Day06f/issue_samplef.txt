@@ -1,0 +1,4 @@
+Title: CRITICAL: Payment Gateway Timeout
+Body:
+The payment spinner spins forever on checkout. This is losing us money!
+Environment: Production.
