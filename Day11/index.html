@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Festive Fun House Booth 📸</title>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background: #0d253f; font-family: 'Comic Sans MS', cursive, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: white; }
+        h1 { margin: 10px 0; text-shadow: 0 0 10px #ff0000; }
+        .booth-container { position: relative; width: 100%; max-width: 640px; margin: 10px; border: 10px solid #c0392b; border-radius: 20px; box-shadow: 0 0 30px rgba(255,255,255,0.2); overflow: hidden; background: #000; }
+        video { width: 100%; height: auto; transform: scaleX(-1); display: block; } /* Mirror effect */
+        canvas { position: absolute; top: 0; left: 0; }
+        
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; padding: 20px; width: 100%; max-width: 600px; }
+        button { padding: 12px 24px; border: none; border-radius: 50px; font-size: 1.2rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; background: white; color: #333; font-weight: bold; }
+        button:hover { transform: scale(1.1); box-shadow: 0 0 15px gold; }
+        button.active { background: #ffeb3b; border: 3px solid #ff9800; }
+        
+        .capture-btn { background: #e91e63; color: white; width: 100%; max-width: 300px; margin-top: 10px; }
+        
+        /* Filter Assets (Emojis acting as sprites) */
+        .hidden-assets { display: none; }
+    </style>
+</head>
+<body>
+    <h1>🎄 Festive Photo Booth 🎄</h1>
+    
+    <div class="booth-container" id="container">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay"></canvas>
+    </div>
+
+    <div class="controls">
+        <button onclick="setFilter('none')">🚫 None</button>
+        <button onclick="setFilter('antlers')">🦌 Antlers</button>
+        <button onclick="setFilter('crown')">❄️ Crown</button>
+        <button onclick="setFilter('nose')">🔴 Nose</button>
+    </div>
+    
+    <div class="controls">
+        <button class="capture-btn" onclick="takeSnapshot()">📸 SNAPSHOT!</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('overlay');
+        const ctx = canvas.getContext('2d');
+        let currentFilter = 'none';
+        let isModelLoaded = false;
+
+        // --- PHASE 1: CORE CAMERA ---
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    startDetection();
+                };
+            } catch (err) { alert("Camera error: " + err); }
+        }
+
+        // --- PHASE 2: FACE DETECTION ---
+        async function loadModels() {
+            // Using TinyFaceDetector for speed on mobile
+            await faceapi.nets.tinyFaceDetector.loadFromUri('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/');
+            isModelLoaded = true;
+            console.log("Models Loaded!");
+            startCamera();
+        }
+
+        async function startDetection() {
+            if (!isModelLoaded) return;
+            const displaySize = { width: video.videoWidth, height: video.videoHeight };
+            faceapi.matchDimensions(canvas, displaySize);
+
+            setInterval(async () => {
+                // Detect faces
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions());
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // --- PHASE 3: APPLY FILTERS ---
+                if (currentFilter !== 'none') {
+                    resizedDetections.forEach(det => {
+                        const { x, y, width, height } = det.box;
+                        drawFilter(currentFilter, x, y, width, height);
+                    });
+                }
+            }, 100);
+        }
+
+        function drawFilter(type, x, y, w, h) {
+            ctx.save();
+            ctx.translate(canvas.width, 0); // Handle mirror flip for drawing text
+            ctx.scale(-1, 1);
+            
+            // Adjust coordinates because of mirror flip
+            const mirroredX = canvas.width - x - w;
+
+            ctx.font = `${w}px serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+
+            if (type === 'antlers') {
+                ctx.fillText("🦌", mirroredX + w/2, y + h * 0.2); 
+            } else if (type === 'crown') {
+                ctx.fillText("❄️", mirroredX + w/2, y); 
+            } else if (type === 'nose') {
+                ctx.font = `${w * 0.4}px serif`;
+                ctx.fillText("🔴", mirroredX + w/2, y + h * 0.7);
+            }
+            ctx.restore();
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // --- PHASE 4: SNAPSHOT ---
+        function takeSnapshot() {
+            // Create a temp canvas to merge video + overlay
+            const snapCanvas = document.createElement('canvas');
+            snapCanvas.width = canvas.width;
+            snapCanvas.height = canvas.height;
+            const snapCtx = snapCanvas.getContext('2d');
+            
+            // Draw Video (Mirrored)
+            snapCtx.translate(snapCanvas.width, 0);
+            snapCtx.scale(-1, 1);
+            snapCtx.drawImage(video, 0, 0);
+            
+            // Draw Overlay (Already mirrored in logic, but context was reset, so simple draw)
+            snapCtx.setTransform(1, 0, 0, 1, 0, 0); // Reset
+            snapCtx.drawImage(canvas, 0, 0);
+            
+            // Download
+            const link = document.createElement('a');
+            link.download = `festive_selfie_${Date.now()}.png`;
+            link.href = snapCanvas.toDataURL();
+            link.click();
+        }
+
+        // Init
+        loadModels();
+    </script>
+</body>
+</html>
