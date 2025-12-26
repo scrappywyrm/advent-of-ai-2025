@@ -7,7 +7,7 @@
   },
   "routing": {
     "team": "Engineering",
-    "suggested_response": "Immediate investigation required - payment gateway timeout affecting revenue. Escalate to on-call engineer and begin debugging payment flow immediately."
+    "suggested_response": "Immediate escalation required - production payment system failure causing revenue loss. Assign P0 priority and initiate incident response protocol."
   }
 }
 ```
