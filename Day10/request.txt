@@ -1,0 +1,6 @@
+event_name: "Live Music Performance"
+event_datetime: "December 18, 7pm-9pm"
+location: "Main Stage"
+event_type: "performance"
+tagline: "An evening of sophistication"
+description: "Join us for a magical night of live orchestral music under the winter stars."
