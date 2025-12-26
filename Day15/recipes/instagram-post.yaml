@@ -1,0 +1,10 @@
+description: Generate an engaging Instagram caption
+parameters:
+  - name: event_name
+  - name: event_date
+  - name: call_to_action
+steps:
+  - name: Generate Caption
+    run: "Write a high-energy Instagram caption for {{event_name}} on {{event_date}}. Use line breaks, emojis, and a 'Link in Bio' call to action: {{call_to_action}}."
+  - name: Generate Hashtags
+    run: "Generate 20 relevant, high-traffic hashtags for this event. Place them at the bottom."

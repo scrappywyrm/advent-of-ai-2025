@@ -1,0 +1,12 @@
+description: Generate a viral Twitter thread
+parameters:
+  - name: event_name
+  - name: event_description
+steps:
+  - name: Create Thread
+    run: |
+      Write a 3-5 tweet thread for {{event_name}}.
+      Tweet 1: The Hook (Excitement)
+      Tweet 2: The Details ({{event_description}})
+      Tweet 3: The FOMO (Why they can't miss it)
+      Tweet 4: The CTA (Link)

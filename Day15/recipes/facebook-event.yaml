@@ -1,0 +1,8 @@
+description: Generate a detailed Facebook Event description
+parameters:
+  - name: event_name
+  - name: event_date
+  - name: target_audience
+steps:
+  - name: Write Description
+    run: "Write a warm, informative Facebook Event description for {{event_name}} on {{event_date}}. Target audience: {{target_audience}}. Include a clearly formatted 'Event Details' section."

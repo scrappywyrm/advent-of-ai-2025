@@ -1,0 +1,25 @@
+description: Orchestrate a full Social Media Blitz
+parameters:
+  - name: event_name
+  - name: event_date
+  - name: event_description
+  - name: target_audience
+  - name: call_to_action
+steps:
+  - name: Instagram
+    run: instagram-post.yaml
+    params:
+      event_name: "{{event_name}}"
+      event_date: "{{event_date}}"
+      call_to_action: "{{call_to_action}}"
+  - name: Twitter
+    run: twitter-thread.yaml
+    params:
+      event_name: "{{event_name}}"
+      event_description: "{{event_description}}"
+  - name: Facebook
+    run: facebook-event.yaml
+    params:
+      event_name: "{{event_name}}"
+      event_date: "{{event_date}}"
+      target_audience: "{{target_audience}}"
