@@ -1,0 +1,14 @@
+**Role:** Senior AI Engineer (Agentic Systems)
+**Company:** FutureTech Corp
+
+**Responsibilities:**
+- Build autonomous AI agents that can reason and execute complex tasks.
+- Design orchestration frameworks to manage multi-agent systems.
+- Ensure reliability and safety of AI outputs using guardrails.
+- Work with Kubernetes to deploy scalable agent infrastructure.
+
+**Requirements:**
+- Strong experience with Python and Cloud Engineering.
+- Experience with LLMs and prompt engineering.
+- Knowledge of containerization (Docker/Kubernetes).
+- Ability to build tools that "govern" AI behavior.
