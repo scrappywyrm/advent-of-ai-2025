@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "item": "Cozy Scarf",
+    "category": "Clothing",
+    "priority": "High Priority",
+    "status": "granted"
+  },
+  {
+    "id": 2,
+    "item": "World Peace",
+    "category": "Magic",
+    "priority": "Dream Priority",
+    "status": "pending"
+  },
+  {
+    "id": 3,
+    "item": "Cozy Scarf",
+    "category": "Clothing",
+    "priority": "High Priority",
+    "status": "granted"
+  },
+  {
+    "id": 4,
+    "item": "World Peace",
+    "category": "Magic",
+    "priority": "Dream Priority",
+    "status": "pending"
+  },
+  {
+    "id": 5,
+    "item": "Cozy Scarf",
+    "category": "Clothing",
+    "priority": "High Priority",
+    "status": "granted"
+  },
+  {
+    "id": 6,
+    "item": "Cozy Scarf",
+    "category": "Clothing",
+    "priority": "High Priority",
+    "status": "granted"
+  },
+  {
+    "id": 7,
+    "item": "World Peace",
+    "category": "Magic",
+    "priority": "Dream Priority",
+    "status": "pending"
+  }
+]
