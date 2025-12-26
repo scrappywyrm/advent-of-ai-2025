@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Winter Festival Staff Schedule</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #f0f4f8; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 20px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        
+        .day-col { background: #ecf0f1; padding: 15px; border-radius: 6px; border-top: 5px solid #bdc3c7; }
+        .day-col h3 { margin-top: 0; color: #2c3e50; text-align: center; }
+        
+        .shift { background: white; padding: 12px; margin-bottom: 10px; border-left: 5px solid #3498db; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .shift strong { display: block; font-size: 1.1em; margin-bottom: 4px; }
+        .shift span { color: #7f8c8d; font-size: 0.9em; }
+        
+        /* Role Colors */
+        .security { border-left-color: #e74c3c; } /* Red */
+        .medical { border-left-color: #2ecc71; } /* Green */
+        .tech { border-left-color: #9b59b6; } /* Purple */
+        .marketing { border-left-color: #f1c40f; } /* Yellow */
+        
+        .warning { background: #fff3cd; color: #856404; padding: 15px; margin-top: 30px; border-radius: 4px; border: 1px solid #ffeeba; }
+        .warning h3 { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 Festival Staff Schedule</h1>
+        
+        <div class="grid">
+            <div class="day-col">
+                <h3>Monday</h3>
+                <div class="shift security">
+                    <strong>Marcus</strong>
+                    <span>Security • 6:00 AM - 2:00 PM</span>
+                </div>
+                <div class="shift tech">
+                    <strong>Jake</strong>
+                    <span>Sound Tech • 7:00 AM - 3:00 PM</span>
+                </div>
+                <div class="shift">
+                    <strong>Sarah</strong>
+                    <span>Coordinator • 8:00 AM - 4:00 PM</span>
+                </div>
+                <div class="shift medical">
+                    <strong>Emma</strong>
+                    <span>First Aid • 9:00 AM - 5:00 PM</span>
+                </div>
+                <div class="shift tech">
+                    <strong>David</strong>
+                    <span>Photo Booth • 10:00 AM - 6:00 PM</span>
+                </div>
+            </div>
+
+            <div class="day-col">
+                <h3>Tuesday</h3>
+                <div class="shift security">
+                    <strong>Marcus</strong>
+                    <span>Security • 6:00 AM - 2:00 PM</span>
+                </div>
+                <div class="shift">
+                    <strong>Sarah</strong>
+                    <span>Coordinator • 8:00 AM - 4:00 PM</span>
+                </div>
+                <div class="shift medical">
+                    <strong>Emma</strong>
+                    <span>First Aid • 9:00 AM - 5:00 PM</span>
+                </div>
+                <div class="shift marketing">
+                    <strong>Elena</strong>
+                    <span>Marketing • 9:00 AM - 5:00 PM</span>
+                </div>
+                <div class="shift tech">
+                    <strong>David</strong>
+                    <span>Photo Booth • 12:00 PM - 8:00 PM</span>
+                </div>
+            </div>
+
+            <div class="day-col">
+                <h3>Wednesday</h3>
+                <div class="shift security">
+                    <strong>Marcus</strong>
+                    <span>Security • 6:00 AM - 2:00 PM</span>
+                </div>
+                <div class="shift medical">
+                    <strong>Emma</strong>
+                    <span>First Aid • 9:00 AM - 5:00 PM</span>
+                </div>
+                <div class="shift tech">
+                    <strong>David</strong>
+                    <span>Photo Booth • 10:00 AM - 6:00 PM</span>
+                </div>
+                <div class="shift">
+                    <strong>Lisa</strong>
+                    <span>Volunteer • 12:00 PM - 8:00 PM</span>
+                    <br><small style="color:red;">*Needs Training</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ Operational Notes & Warnings</h3>
+            <ul>
+                <li><strong>Training Alert:</strong> Lisa (Wed) is a new volunteer and requires training. Assign Sarah or David to assist.</li>
+                <li><strong>Coverage Gap:</strong> No Setup Crew (Tom) scheduled for Wednesday (Only Avail Sun-Tue).</li>
+                <li><strong>Preference Met:</strong> Marcus assigned early shifts (6am) as requested.</li>
+                <li><strong>Conflict Avoided:</strong> Elena not scheduled Monday (unavailable).</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
