@@ -1,0 +1,54 @@
+{
+  "vendors": [
+    {
+      "name": "Joes hot cocoa",
+      "location": "main plaza",
+      "cuisine": "hot drinks & pastries"
+    },
+    {
+      "name": "TACO TRUCK DEL FUEGO!!!",
+      "location": "north entrance",
+      "cuisine": "mexican food"
+    },
+    {
+      "name": "sweet treats bakery",
+      "location": "near the ice rink",
+      "cuisine": "cookies"
+    },
+    {
+      "name": "Pierogi Palace",
+      "location": "east side",
+      "cuisine": "polish food"
+    },
+    {
+      "name": "Waffle Wonderland",
+      "location": "next to storytelling tent",
+      "cuisine": "WAFFLES"
+    },
+    {
+      "name": "mamas meatballs",
+      "location": "food court area",
+      "cuisine": "italian"
+    },
+    {
+      "name": "The Pretzel Pretender",
+      "location": "west plaza",
+      "cuisine": "pretzels"
+    },
+    {
+      "name": "Curry in a Hurry",
+      "location": "mobile cart roams around",
+      "cuisine": null
+    },
+    {
+      "name": "Sushi on Ice",
+      "location": "near skating rink",
+      "cuisine": "sushi"
+    },
+    {
+      "name": "PIZZA PALACE",
+      "location": "main stage area",
+      "cuisine": "pizza slices"
+    }
+  ]
+}
