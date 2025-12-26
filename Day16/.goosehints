@@ -1,0 +1,12 @@
+[tech-stack]
+- Vanilla HTML5, CSS3, JS (ES6+).
+- CSS Grid/Flexbox. No frameworks.
+
+[app-behavior]
+- **Persistence:** Use `localStorage` to remember email signups. If signed up, replace form with "You're on the list!".
+- **Performance:** Update only text nodes for the countdown, not full HTML.
+- **Timezone:** Target Date (Dec 1, 2026, 10:00 AM) is Local System Time.
+
+[design-system]
+- Colors: #002B5B (Midnight), #00D4FF (Ice).
+- Style: Glassmorphism cards, Snowfall background animation.
