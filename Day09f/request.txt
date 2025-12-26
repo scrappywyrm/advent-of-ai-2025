@@ -1,0 +1,11 @@
+recipient_name: "Marcus Rodriguez"
+gift_description: "Professional microphone"
+sender_name: "Winter Festival Team"
+tag_style: "elegant"
+include_poem: true
+qr_message_url: "https://example.com/thank-you-marcus"
+recipient_preferences:
+  favorite_color: "navy blue"
+  language: "Spanish"
+  tone: "formal"
+gift_size: "medium"
